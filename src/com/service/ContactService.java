@@ -9,15 +9,18 @@ import java.sql.SQLException;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.context.Container;
+import com.context.Settings;
 import com.dao.ContactDao;
 import com.model.Contact;
 import com.sun.jersey.core.header.FormDataContentDisposition;
@@ -48,18 +51,56 @@ public class ContactService {
 		return contactDao.findById(id);
 	}
 
+	@Path("{id}")
+	@DELETE
+	@Produces(MediaType.APPLICATION_JSON)
+	public boolean removeContact(@PathParam("id") int id)
+			throws ClassNotFoundException, SQLException {
+		return contactDao.delete(id);
+	}
+
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Contact uploadFile(@FormParam("name") String name,
+	public Contact createContact(@FormParam("name") String name,
 			@FormParam("mobile") String mobile,
 			@FormParam("landline") String landline,
 			@FormParam("email") String email,
 			@FormDataParam("file") InputStream uploadedInputStream,
 			@FormDataParam("file") FormDataContentDisposition fileDetail)
 			throws IOException, ClassNotFoundException, SQLException {
-		String uploadedFileLocation = "c://uploaded/" + fileDetail.getFileName();
-		writeToFile(uploadedInputStream, uploadedFileLocation);
-		return contactDao.create(name, mobile, landline, email);
+		String profileImageUrl = Settings.PROFILE_IMAGE_FOLDER
+				+ fileDetail.getFileName();
+		writeToFile(uploadedInputStream, profileImageUrl);
+		Contact contact = new Contact();
+		contact.setName(name);
+		contact.setMobile(mobile);
+		contact.setLandLine(landline);
+		contact.setEmail(email);
+		contact.setProfileImageUrl(profileImageUrl);
+		return contactDao.create(contact);
+	}
+
+	@Path("{id}")
+	@PUT()
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Contact updateContact(@PathParam("id") int id,
+			@FormParam("name") String name, @FormParam("mobile") String mobile,
+			@FormParam("landline") String landline,
+			@FormParam("email") String email,
+			@FormDataParam("file") InputStream uploadedInputStream,
+			@FormDataParam("file") FormDataContentDisposition fileDetail)
+			throws IOException, ClassNotFoundException, SQLException {
+		String profileImageUrl = Settings.PROFILE_IMAGE_FOLDER
+				+ fileDetail.getFileName();
+		writeToFile(uploadedInputStream, profileImageUrl);
+		Contact contact = new Contact();
+		contact.setId(id);
+		contact.setName(name);
+		contact.setMobile(mobile);
+		contact.setLandLine(landline);
+		contact.setEmail(email);
+		contact.setProfileImageUrl(profileImageUrl);
+		return contactDao.update(contact);
 	}
 
 	private void writeToFile(InputStream uploadedInputStream,

@@ -23,7 +23,7 @@ public class ContactDao {
 	public List<Contact> findAllContacts() throws SQLException,
 			ClassNotFoundException {
 		Connection connection = dataSource.getConnection();
-		String sql = "select id,name,mobile,landline,email from contact";
+		String sql = "select id,name,mobile,landline,email,profile_image_url from contact";
 		Statement statement = connection.createStatement();
 		ResultSet resultSet = statement.executeQuery(sql);
 		return populateContacts(resultSet);
@@ -39,6 +39,7 @@ public class ContactDao {
 			contact.setMobile(resultSet.getString("mobile"));
 			contact.setLandLine(resultSet.getString("landline"));
 			contact.setEmail(resultSet.getString("email"));
+			contact.setProfileImageUrl(resultSet.getString("profile_image_url"));
 			contacts.add(contact);
 		}
 		return contacts;
@@ -46,7 +47,7 @@ public class ContactDao {
 
 	public Contact findById(int id) throws SQLException, ClassNotFoundException {
 		Connection connection = dataSource.getConnection();
-		String sql = "select id,name,mobile,landline,email from contact where id = ?";
+		String sql = "select id,name,mobile,landline,email,profile_image_url from contact where id = ?";
 		PreparedStatement statement = connection.prepareStatement(sql);
 		statement.setInt(1, id);
 		ResultSet resultSet = statement.executeQuery();
@@ -62,22 +63,50 @@ public class ContactDao {
 			contact.setMobile(resultSet.getString("mobile"));
 			contact.setLandLine(resultSet.getString("landline"));
 			contact.setEmail(resultSet.getString("email"));
+			contact.setProfileImageUrl(resultSet.getString("profile_image_url"));
 		}
 		return contact;
 	}
 
-	public Contact create(String name, String mobile, String landline,
-			String email) throws SQLException, ClassNotFoundException {
+	public Contact create(Contact contact) throws SQLException,
+			ClassNotFoundException {
 		Connection connection = dataSource.getConnection();
-		String sql = "insert into contact(name,mobile,landline,email) values('?','?','?','?')";
+		String sql = "insert into contact(name,mobile,landline,email,profile_image_url) values('?','?','?','?','?')";
 		PreparedStatement statement = connection.prepareStatement(sql,
 				Statement.RETURN_GENERATED_KEYS);
-		statement.setString(1, name);
-		statement.setString(2, mobile);
-		statement.setString(3, landline);
-		statement.setString(4, email);
+		statement.setString(1, contact.getName());
+		statement.setString(2, contact.getMobile());
+		statement.setString(3, contact.getLandLine());
+		statement.setString(4, contact.getEmail());
+		statement.setString(5, contact.getProfileImageUrl());
 		int insertedContactId = statement.executeUpdate();
-		return findById(insertedContactId);
+		contact.setId(insertedContactId);
+		return contact;
+	}
+
+	public Contact update(Contact contact) throws SQLException,
+			ClassNotFoundException {
+		Connection connection = dataSource.getConnection();
+		String sql = "update contact set name='?',mobile='?',landline='?',email='?',profile_image_url='?' where id=?";
+		PreparedStatement statement = connection.prepareStatement(sql,
+				Statement.RETURN_GENERATED_KEYS);
+		statement.setString(1, contact.getName());
+		statement.setString(2, contact.getMobile());
+		statement.setString(3, contact.getLandLine());
+		statement.setString(4, contact.getEmail());
+		statement.setString(5, contact.getProfileImageUrl());
+		statement.setInt(6, contact.getId());
+		statement.executeUpdate();
+		return findById(contact.getId());
+	}
+
+	public boolean delete(int id) throws ClassNotFoundException, SQLException {
+		Connection connection = dataSource.getConnection();
+		String sql = "delete from contact where id = ?";
+		PreparedStatement statement = connection.prepareStatement(sql);
+		statement.setInt(1, id);
+		statement.executeUpdate();
+		return findById(id) == null;
 	}
 
 }

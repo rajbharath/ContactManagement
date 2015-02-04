@@ -9,6 +9,7 @@ public class Contact {
 	private String mobile;
 	private String landLine;
 	private String email;
+	private String profileImageUrl;
 
 	public Contact() {
 	}
@@ -51,6 +52,14 @@ public class Contact {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getProfileImageUrl() {
+		return profileImageUrl;
+	}
+
+	public void setProfileImageUrl(String profileImageUrl) {
+		this.profileImageUrl = profileImageUrl;
 	}
 
 	@Override
