@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<propertyfile file="build.properties" />
+	<property name="source-directory" value="src" />
+	<property name="classes-directory" value="build/classes" />
+	<property name="web-directory" value="WebContent" />
+	<property name="external-jar-directory" value="${web-directory}/WEB-INF/lib" />
+	<property name="web-xml-file" value="${web-directory}/WEB-INF/web.xml" />
+
+	<target name="info" description="Build Process Started">
+		<echo message="Build Process Started" />
+	</target>
+
+	<target name="clean">
+		<delete dir="build">
+		</delete>
+	</target>
+
+	<path id="build.classpath.jar">
+		<fileset dir="${external-jar-directory}">
+			<include name="**.jar" />
+		</fileset>
+	</path>
+
+	<target name="compile" depends="clean">
+		<mkdir dir="build/classes" />
+		<javac srcdir="src" destdir="build/classes">
+			<classpath refid="build.classpath.jar" />
+		</javac>
+	</target>
+
+	<target name="deploy-war" depends="compile">
+		<war destfile="fax.war" webxml="${web-xml-file}">
+			<fileset dir="${web-directory}">
+				<include name="**/*.*" />
+			</fileset>
+			<classes dir="${classes-directory}" />
+		</war>
+	</target>
+</project>
